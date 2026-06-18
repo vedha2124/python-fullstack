@@ -1,10 +1,15 @@
+# Week 2 - library system
+# practising classes again. A Library holds a bunch of Book objects.
+# you can add, search, borrow and return books.
+
 class Book:
     def __init__(self, title, author):
         self.title = title
         self.author = author
-        self.is_borrowed = False  
+        self.is_borrowed = False   # every new book starts off available
 
     def status(self):
+        # just a little helper so I can print available/borrowed easily
         if self.is_borrowed:
             return "borrowed"
         else:
@@ -13,13 +18,14 @@ class Book:
 
 class Library:
     def __init__(self):
-        self.books = []  
+        self.books = []
 
     def add_book(self, title, author):
         self.books.append(Book(title, author))
         print("Added:", title, "by", author)
 
     def find_book(self, title):
+        # look for an exact title match (ignoring case), returns None if not found
         for book in self.books:
             if book.title.lower() == title.lower():
                 return book
@@ -29,6 +35,7 @@ class Library:
         keyword = keyword.lower()
         found = False
         for book in self.books:
+            # match on either the title or the author
             if keyword in book.title.lower() or keyword in book.author.lower():
                 print("-", book.title, "by", book.author, "(" + book.status() + ")")
                 found = True
@@ -50,7 +57,7 @@ class Library:
         if book is None:
             print("That book is not in the library.")
         elif not book.is_borrowed:
-            print("That book was not borrowed.")
+            print("That book was not borrowed.")   # can't return something nobody took
         else:
             book.is_borrowed = False
             print("You returned:", book.title)
@@ -63,8 +70,10 @@ class Library:
         for book in self.books:
             print("-", book.title, "by", book.author, "(" + book.status() + ")")
 
+
 def main():
     library = Library()
+    # start with a couple of books so the menu isn't empty
     library.add_book("The Hobbit", "Tolkien")
     library.add_book("Python Basics", "Guido")
 
@@ -99,4 +108,6 @@ def main():
             break
         else:
             print("Invalid choice. Please type 1-6.")
+
+
 main()

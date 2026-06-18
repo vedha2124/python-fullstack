@@ -1,9 +1,12 @@
+# Week 2 - mini bank
+# two classes: Account (one person's money) and Bank (keeps all the accounts together)
+# can deposit, withdraw and transfer between people
 
 class Account:
     def __init__(self, owner):
         self.owner = owner
         self.balance = 0
-        self.history = []  
+        self.history = []   # list of strings describing what happened
 
     def deposit(self, amount):
         if amount <= 0:
@@ -18,7 +21,7 @@ class Account:
             print("Amount must be more than zero.")
             return
         if amount > self.balance:
-            print("Not enough money. Balance is", self.balance)
+            print("Not enough money. Balance is", self.balance)   # can't go negative
             return
         self.balance = self.balance - amount
         self.history.append("Withdrew " + str(amount))
@@ -31,9 +34,11 @@ class Account:
         for line in self.history:
             print("-", line)
         print("Current balance:", self.balance)
+
+
 class Bank:
     def __init__(self):
-        self.accounts = {}  
+        self.accounts = {}   # name -> Account, so I can look people up by name
 
     def create_account(self, name):
         if name in self.accounts:
@@ -41,12 +46,15 @@ class Bank:
             return
         self.accounts[name] = Account(name)
         print("Account created for", name)
+
     def get_account(self, name):
         if name in self.accounts:
             return self.accounts[name]
         print("No account found for", name)
         return None
+
     def transfer(self, from_name, to_name, amount):
+        # basically a withdraw from one account + deposit into the other
         sender = self.get_account(from_name)
         receiver = self.get_account(to_name)
         if sender is None or receiver is None:
@@ -71,6 +79,8 @@ def read_number(prompt):
             return float(value)
         except ValueError:
             print("Please type a number.")
+
+
 def main():
     bank = Bank()
     while True:
@@ -114,4 +124,6 @@ def main():
             break
         else:
             print("Invalid choice. Please type 1-6.")
+
+
 main()

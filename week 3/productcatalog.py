@@ -1,26 +1,39 @@
+# Week 3 - product catalog API
+# similar idea to the todo one but with search + filtering on the GET
+# run:  uvicorn productcatalog:app --reload
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI(title="Product Catalog API")
+
+
 class ProductIn(BaseModel):
     name: str
     category: str
     price: float
 
+
 class PriceUpdate(BaseModel):
-    price: float          
+    price: float   # only the price for the update-price endpoint
+
+
 products = []
 
+
 def get_next_id():
+    # find the biggest id we've used and add one
     highest = 0
     for product in products:
         if product["id"] > highest:
             highest = product["id"]
     return highest + 1
 
+
 @app.get("/")
 def home():
     return {"message": "Welcome! Open /docs to try the API."}
+
 
 @app.post("/products")
 def add_product(product: ProductIn):
@@ -33,8 +46,10 @@ def add_product(product: ProductIn):
     products.append(new_product)
     return new_product
 
+
 @app.get("/products")
 def list_products(search: str = None, category: str = None):
+    # both filters are optional - if they're None we just skip that check
     result = []
     for product in products:
         if search is not None and search.lower() not in product["name"].lower():
@@ -43,6 +58,7 @@ def list_products(search: str = None, category: str = None):
             continue
         result.append(product)
     return result
+
 
 @app.put("/products/{product_id}/price")
 def update_price(product_id: int, new_price: PriceUpdate):

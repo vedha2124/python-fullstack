@@ -1,13 +1,21 @@
+# Week 3 - notes API
+# CRUD for little notes, each one has a title, content and a tag you can filter by
+# run:  uvicorn notesapi:app --reload
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI(title="Notes API")
 
+
 class NoteIn(BaseModel):
     title: str
     content: str
     tag: str
-    notes = []
+
+
+notes = []   # was accidentally inside the class before - has to be out here
+
 
 def get_next_id():
     highest = 0
@@ -16,9 +24,11 @@ def get_next_id():
             highest = note["id"]
     return highest + 1
 
+
 @app.get("/")
 def home():
     return {"message": "Welcome! Open /docs to try the API."}
+
 
 @app.post("/notes")
 def create_note(note: NoteIn):
@@ -31,8 +41,10 @@ def create_note(note: NoteIn):
     notes.append(new_note)
     return new_note
 
+
 @app.get("/notes")
 def get_notes(search: str = None, tag: str = None):
+    # search looks in the title, tag has to match exactly
     result = []
     for note in notes:
         if search is not None and search.lower() not in note["title"].lower():
@@ -41,6 +53,7 @@ def get_notes(search: str = None, tag: str = None):
             continue
         result.append(note)
     return result
+
 
 @app.put("/notes/{note_id}")
 def edit_note(note_id: int, updated: NoteIn):
@@ -52,6 +65,7 @@ def edit_note(note_id: int, updated: NoteIn):
             return note
     raise HTTPException(status_code=404, detail="Note not found")
 
+
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: int):
     for note in notes:
@@ -59,4 +73,3 @@ def delete_note(note_id: int):
             notes.remove(note)
             return {"message": "Note deleted"}
     raise HTTPException(status_code=404, detail="Note not found")
-

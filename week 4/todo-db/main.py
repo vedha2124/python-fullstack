@@ -1,11 +1,19 @@
+# Week 4 - todo API but now it actually saves to a database (sqlite)
+# big difference from week 3: the data survives a restart now.
+# run:  uvicorn main:app --reload
+
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal, Base
 import models
-Base.metadata.create_all(bind=engine)
+
+Base.metadata.create_all(bind=engine)   # makes the tables if they don't exist yet
 
 app = FastAPI(title="Todo API with Database")
+
+
+# gives each request a db session and makes sure it gets closed after
 def get_db():
     db = SessionLocal()
     try:
@@ -13,11 +21,14 @@ def get_db():
     finally:
         db.close()
 
+
 class UserIn(BaseModel):
     name: str
 
+
 class TodoIn(BaseModel):
     title: str
+
 
 @app.post("/users")
 def create_user(user: UserIn, db: Session = Depends(get_db)):
@@ -27,6 +38,7 @@ def create_user(user: UserIn, db: Session = Depends(get_db)):
     db.refresh(new_user)    # get the new id back from the database
     return {"id": new_user.id, "name": new_user.name}
 
+
 @app.get("/users")
 def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
@@ -35,9 +47,10 @@ def get_users(db: Session = Depends(get_db)):
         result.append({"id": user.id, "name": user.name})
     return result
 
+
 @app.post("/users/{user_id}/todos")
 def create_todo(user_id: int, todo: TodoIn, db: Session = Depends(get_db)):
-    # First make sure that user actually exists
+    # first make sure that user actually exists
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -53,6 +66,7 @@ def create_todo(user_id: int, todo: TodoIn, db: Session = Depends(get_db)):
         "owner_id": new_todo.owner_id,
     }
 
+
 @app.get("/users/{user_id}/todos")
 def get_user_todos(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -64,6 +78,7 @@ def get_user_todos(user_id: int, db: Session = Depends(get_db)):
     for todo in user.todos:
         result.append({"id": todo.id, "title": todo.title, "done": todo.done})
     return result
+
 
 @app.delete("/todos/{todo_id}")
 def delete_todo(todo_id: int, db: Session = Depends(get_db)):
